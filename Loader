@@ -1,0 +1,919 @@
+-- This file was generated at discord.gg/syncrypt
+
+local UserInputService = game:GetService("UserInputService")
+local Lighting = game:GetService("Lighting")
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local PlayerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+
+for _, container in ipairs({ workspace, workspace.CurrentCamera }) do
+	if container then
+		for _, child in ipairs(container:GetChildren()) do
+			if child.Name == "ShaderZ_Particles" then
+				child:Destroy()
+			end
+		end
+	end
+end
+
+if PlayerGui:FindFirstChild("ShaderZ_Menu") then
+	PlayerGui.ShaderZ_Menu:Destroy()
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+
+ScreenGui.Name = "ShaderZ_Menu"
+ScreenGui.Parent = PlayerGui
+ScreenGui.ResetOnSpawn = false
+
+local Frame = Instance.new("Frame")
+
+Frame.Name = "RainFrame"
+Frame.Size = UDim2.new(1, 0, 1, 0)
+Frame.BackgroundTransparency = 1
+Frame.Parent = ScreenGui
+
+local Frame2 = Instance.new("Frame")
+
+Frame2.Size = UDim2.new(1, 0, 1, 0)
+Frame2.BackgroundTransparency = 1
+Frame2.ZIndex = 10
+Frame2.Parent = ScreenGui
+
+local TextLabel = Instance.new("TextLabel")
+
+TextLabel.Size = UDim2.new(1, 0, 0, 100)
+TextLabel.Position = UDim2.new(0, 0, 0.45, 0)
+TextLabel.BackgroundTransparency = 1
+TextLabel.Text = ""
+TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextLabel.Font = Enum.Font.GothamBold
+TextLabel.TextSize = 45
+TextLabel.TextTransparency = 1
+TextLabel.RichText = true
+TextLabel.Parent = Frame2
+
+local Frame3 = Instance.new("Frame")
+
+Frame3.Name = "MainFrame"
+Frame3.Size = UDim2.new(0, 0, 0, 0)
+Frame3.Position = UDim2.new(0.5, 0, 0.5, 0)
+Frame3.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+Frame3.BorderSizePixel = 0
+Frame3.ClipsDescendants = true
+Frame3.Visible = false
+Frame3.Active = true
+Frame3.Parent = ScreenGui
+
+local UIStroke = Instance.new("UIStroke")
+
+UIStroke.Thickness = 1.5
+UIStroke.Color = Color3.fromRGB(255, 80, 170)
+UIStroke.Transparency = 0.2
+UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke.BorderStrokePosition = Enum.BorderStrokePosition.Inner
+UIStroke.Parent = Frame3
+Instance.new("UICorner", Frame3).CornerRadius = UDim.new(0, 8)
+
+local Frame4 = Instance.new("Frame")
+
+Frame4.Size = UDim2.new(1, 0, 0, 35)
+Frame4.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+Frame4.BorderSizePixel = 0
+Frame4.Parent = Frame3
+
+local TextLabel2 = Instance.new("TextLabel")
+
+TextLabel2.Size = UDim2.new(1, -80, 1, 0)
+TextLabel2.Position = UDim2.new(0, 12, 0, 0)
+TextLabel2.BackgroundTransparency = 1
+TextLabel2.Text = "Shaders\n<font size=\"8\" color=\"rgb(140,140,140)\">Noctalia</font>"
+TextLabel2.RichText = true
+TextLabel2.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextLabel2.TextXAlignment = Enum.TextXAlignment.Left
+TextLabel2.Font = Enum.Font.GothamBold
+TextLabel2.TextSize = 12
+TextLabel2.Parent = Frame4
+
+local function createTextButton(p1, p2, p3)
+	local TextButton = Instance.new("TextButton")
+
+	TextButton.Size = UDim2.new(0, 22, 0, 22)
+	TextButton.Position = p2
+	TextButton.Text = p1
+	TextButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+	TextButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+	TextButton.Font = Enum.Font.GothamBold
+	TextButton.TextSize = 12
+	TextButton.Parent = Frame4
+	Instance.new("UICorner", TextButton).CornerRadius = UDim.new(0, 4)
+
+	local UIStroke2 = Instance.new("UIStroke")
+
+	UIStroke2.Color = p3
+	UIStroke2.Thickness = 1
+	UIStroke2.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	UIStroke2.BorderStrokePosition = Enum.BorderStrokePosition.Inner
+	UIStroke2.Parent = TextButton
+
+	return TextButton
+end
+
+local v18 = createTextButton("×", UDim2.new(1, -28, 0, 6.5), Color3.fromRGB(255, 80, 170))
+local v19 = createTextButton("-", UDim2.new(1, -56, 0, 6.5), Color3.fromRGB(100, 100, 100))
+local ScrollingFrame = Instance.new("ScrollingFrame")
+
+ScrollingFrame.Size = UDim2.new(1, -20, 1, -50)
+ScrollingFrame.Position = UDim2.new(0, 10, 0, 45)
+ScrollingFrame.BackgroundTransparency = 1
+ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+ScrollingFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+ScrollingFrame.ScrollBarThickness = 2
+ScrollingFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 80, 170)
+ScrollingFrame.Parent = Frame3
+Instance.new("UIListLayout", ScrollingFrame).Padding = UDim.new(0, 8)
+
+local particleConn = nil
+local particleParts = {}
+
+-- Paste real rbxassetid:// galaxy skybox faces here to use them in the GALAXY shader:
+-- { Bk = "rbxassetid://...", Dn = ..., Ft = ..., Lf = ..., Rt = ..., Up = ... }
+local GALAXY_SKYBOX = nil
+
+local SPARKLE = "rbxasset://textures/particles/sparkles_main.dds"
+local SOFT = "rbxasset://textures/particles/smoke_main.dds"
+local TWINKLE = NumberSequence.new({
+	NumberSequenceKeypoint.new(0, 1),
+	NumberSequenceKeypoint.new(0.25, 0.1),
+	NumberSequenceKeypoint.new(0.75, 0.1),
+	NumberSequenceKeypoint.new(1, 1),
+})
+
+local function stopParticles()
+	if particleConn then
+		particleConn:Disconnect()
+		particleConn = nil
+	end
+
+	for _, entry in ipairs(particleParts) do
+		entry.part:Destroy()
+	end
+
+	table.clear(particleParts)
+
+	-- sweep leftovers (e.g. from an earlier run of this script)
+	for _, container in ipairs({ workspace, workspace.CurrentCamera }) do
+		if container then
+			for _, child in ipairs(container:GetChildren()) do
+				if child.Name == "ShaderZ_Particles" then
+					child:Destroy()
+				end
+			end
+		end
+	end
+end
+
+-- World particles from invisible parts that follow the camera. Takes one config per emitter.
+-- cfg: area (Vector3), offset (Vector3 from camera), volume (emit inside the box instead of
+-- from its bottom face), rate, life {min,max}, speed {min,max}, size {min,max}, color
+-- (ColorSequence), transparency (NumberSequence), accel, texture, emission, streak
+local function startParticles(...)
+	stopParticles()
+
+	for _, cfg in ipairs({ ... }) do
+		local camera = workspace.CurrentCamera
+		local part = Instance.new("Part")
+
+		part.Name = "ShaderZ_Particles"
+		part.Anchored = true
+		part.CanCollide = false
+		part.CanQuery = false
+		part.CanTouch = false
+		part.CastShadow = false
+		part.Transparency = 1
+		part.Size = cfg.area
+		part.Position = (camera and camera.CFrame.Position or Vector3.zero) + cfg.offset
+		part.Parent = camera or workspace
+
+		local emitter = Instance.new("ParticleEmitter")
+
+		emitter.Enabled = true
+		emitter.Shape = Enum.ParticleEmitterShape.Box
+		emitter.Texture = cfg.texture or SOFT
+		emitter.Rate = cfg.rate
+		emitter.Lifetime = NumberRange.new(cfg.life[1], cfg.life[2])
+		emitter.Speed = NumberRange.new(cfg.speed[1], cfg.speed[2])
+		emitter.Size = NumberSequence.new(cfg.size[1], cfg.size[2])
+		emitter.Color = cfg.color
+		emitter.Transparency = cfg.transparency or NumberSequence.new(0.2)
+		emitter.Acceleration = cfg.accel or Vector3.zero
+		emitter.LightEmission = cfg.emission or 0
+		emitter.LightInfluence = 0
+		emitter.RotSpeed = NumberRange.new(-60, 60)
+		emitter.Rotation = NumberRange.new(0, 360)
+		emitter.LockedToPart = false
+
+		if cfg.volume then
+			emitter.ShapeStyle = Enum.ParticleEmitterShapeStyle.Volume
+			emitter.SpreadAngle = Vector2.new(180, 180)
+		else
+			emitter.EmissionDirection = Enum.NormalId.Bottom
+			emitter.SpreadAngle = Vector2.new(4, 4)
+		end
+
+		if cfg.streak then
+			emitter.Orientation = Enum.ParticleOrientation.VelocityParallel
+		end
+
+		emitter.Parent = part
+		table.insert(particleParts, { part = part, offset = cfg.offset })
+	end
+
+	particleConn = RunService.RenderStepped:Connect(function()
+		local camera = workspace.CurrentCamera
+
+		if camera then
+			for _, entry in ipairs(particleParts) do
+				entry.part.Position = camera.CFrame.Position + entry.offset
+			end
+		end
+	end)
+end
+
+local function addEffect(className, props)
+	local effect = Instance.new(className)
+
+	for name, value in pairs(props) do
+		effect[name] = value
+	end
+
+	effect.Parent = Lighting
+
+	return effect
+end
+
+local hiddenSkies = {}
+
+local function restoreSkies()
+	for _, sky in ipairs(hiddenSkies) do
+		sky.Parent = Lighting
+	end
+
+	table.clear(hiddenSkies)
+end
+
+-- Hides the game's own sky (it would override ours) until the next reset. skybox is an
+-- optional table of rbxassetid:// ids: { Bk, Dn, Ft, Lf, Rt, Up }
+local function addSky(starCount, skybox)
+	for _, child in ipairs(Lighting:GetChildren()) do
+		if child:IsA("Sky") then
+			table.insert(hiddenSkies, child)
+			child.Parent = nil
+		end
+	end
+
+	local sky = addEffect("Sky", {
+		StarCount = starCount,
+		CelestialBodiesShown = true,
+	})
+
+	if skybox then
+		sky.SkyboxBk = skybox.Bk
+		sky.SkyboxDn = skybox.Dn
+		sky.SkyboxFt = skybox.Ft
+		sky.SkyboxLf = skybox.Lf
+		sky.SkyboxRt = skybox.Rt
+		sky.SkyboxUp = skybox.Up
+	end
+
+	sky.Name = "ShaderZ_Sky"
+end
+
+local function setReflectance(value)
+	for _, descendant in pairs(game.Workspace:GetDescendants()) do
+		if descendant:IsA("BasePart") and descendant.Name ~= "Terrain" then
+			descendant.Reflectance = value
+		end
+	end
+end
+
+local function v21()
+	stopParticles()
+
+	local v22 = Lighting
+
+	for _, child in pairs(v22.GetChildren(v22)) do
+		if child.Name == "ShaderZ_Sky" then
+			child:Destroy()
+		end
+	end
+
+	restoreSkies()
+
+	for _, child in pairs(v22.GetChildren(v22)) do
+		if child:IsA("PostEffect") or (child:IsA("Atmosphere") or (child:IsA("Clouds") or child:IsA("SunRaysEffect"))) or child.Name == "ShaderZ_Sky" then
+			child:Destroy()
+		end
+	end
+
+	Lighting.FogColor = Color3.fromRGB(192, 192, 192)
+	Lighting.FogStart = 0
+
+	Lighting.ClockTime = 14
+	Lighting.Brightness = 2
+	Lighting.ExposureCompensation = 0
+	Lighting.FogEnd = 100000
+	Lighting.Ambient = Color3.fromRGB(127, 127, 127)
+	Lighting.OutdoorAmbient = Color3.fromRGB(127, 127, 127)
+	Lighting.EnvironmentDiffuseScale = 0
+	Lighting.EnvironmentSpecularScale = 0
+
+	for _, descendant in pairs(game.Workspace:GetDescendants()) do
+		if descendant:IsA("BasePart") then
+			descendant.Reflectance = 0
+		end
+	end
+end
+local function v27(p4, p5)
+	local TextButton = Instance.new("TextButton")
+
+	TextButton.Size = UDim2.new(1, 0, 0, 38)
+	TextButton.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+	TextButton.Text = p4:upper()
+	TextButton.TextColor3 = Color3.fromRGB(240, 240, 240)
+	TextButton.Font = Enum.Font.GothamBold
+	TextButton.TextSize = 10
+	TextButton.Parent = ScrollingFrame
+	Instance.new("UICorner", TextButton).CornerRadius = UDim.new(0, 6)
+
+	local UIStroke2 = Instance.new("UIStroke")
+
+	UIStroke2.Thickness = 1
+	UIStroke2.Color = Color3.fromRGB(40, 40, 40)
+	UIStroke2.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	UIStroke2.BorderStrokePosition = Enum.BorderStrokePosition.Inner
+	UIStroke2.Parent = TextButton
+	TextButton.MouseEnter:Connect(function()
+		local v30 = TweenService
+		local v31 = UIStroke2
+		local tweenInfo = TweenInfo.new(0.3)
+		local color3 = Color3.fromRGB
+
+		v30.Create(v30, v31, tweenInfo, {
+			Color = color3(255, 80, 170)
+		}):Play()
+
+		local v34 = TweenService
+		local v35 = TextButton
+		local tweenInfo2 = TweenInfo.new(0.3)
+
+		v34.Create(v34, v35, tweenInfo2, {
+			BackgroundColor3 = Color3.fromRGB(32, 12, 24)
+		}):Play()
+	end)
+	TextButton.MouseLeave:Connect(function()
+		local v37 = TweenService
+		local v38 = UIStroke2
+		local tweenInfo = TweenInfo.new(0.3)
+		local Color3_ = Color3
+
+		v37.Create(v37, v38, tweenInfo, {
+			Color = Color3_.fromRGB(40, 40, 40)
+		}):Play()
+
+		local v41 = TweenService
+		local v42 = TextButton
+		local tweenInfo2 = TweenInfo.new(0.3)
+		local color3 = Color3.fromRGB
+
+		v41.Create(v41, v42, tweenInfo2, {
+			BackgroundColor3 = color3(18, 18, 18)
+		}):Play()
+	end)
+	TextButton.MouseButton1Click:Connect(p5)
+end
+
+v27("RAINY DEPRESSION", function()
+	v21()
+	Lighting.ClockTime = 14
+	Lighting.Brightness = 0.8
+	Lighting.Ambient = Color3.fromRGB(70, 85, 110)
+	Lighting.OutdoorAmbient = Color3.fromRGB(80, 100, 130)
+	Lighting.FogColor = Color3.fromRGB(110, 130, 160)
+	Lighting.FogStart = 30
+	Lighting.FogEnd = 900
+	setReflectance(0.4)
+
+	addEffect("Atmosphere", {
+		Density = 0.65,
+		Haze = 4,
+		Color = Color3.fromRGB(120, 150, 195),
+		Decay = Color3.fromRGB(60, 85, 125),
+	})
+	addEffect("BlurEffect", { Size = 4 })
+	addEffect("ColorCorrectionEffect", {
+		Saturation = -0.4,
+		TintColor = Color3.fromRGB(165, 195, 240),
+		Contrast = 0.05,
+	})
+	startParticles({
+		area = Vector3.new(90, 1, 90),
+		offset = Vector3.new(0, 45, 0),
+		rate = 260,
+		life = { 0.34, 0.4 },
+		speed = { 130, 150 },
+		size = { 0.5, 0.7 },
+		color = ColorSequence.new(Color3.fromRGB(190, 215, 255)),
+		transparency = NumberSequence.new(0.55),
+		accel = Vector3.new(-6, 0, 0),
+		texture = SPARKLE,
+		streak = true,
+	})
+end)
+v27("SOFT SUNSET", function()
+	v21()
+	Lighting.ClockTime = 17.6
+	Lighting.Brightness = 2.5
+	Lighting.ExposureCompensation = -0.25
+
+	local pairs_ = pairs
+	local Workspace = game.Workspace
+
+	for _, descendant in pairs_(Workspace.GetDescendants(Workspace)) do
+		local isBasePart = descendant:IsA("BasePart")
+
+		if isBasePart then
+			isBasePart = descendant.Name ~= "Terrain"
+		end
+
+		if isBasePart then
+			descendant.Reflectance = 0.15
+		end
+	end
+
+	Lighting.EnvironmentDiffuseScale = 0.5
+	Lighting.EnvironmentSpecularScale = 1
+
+	local Atmosphere = Instance.new("Atmosphere", Lighting)
+
+	Atmosphere.Density = 0.35
+	Atmosphere.Color = Color3.fromRGB(255, 110, 40)
+	Instance.new("BlurEffect", Lighting).Size = 4
+
+	local ColorCorrectionEffect = Instance.new("ColorCorrectionEffect", Lighting)
+
+	ColorCorrectionEffect.Saturation = 0.6
+	ColorCorrectionEffect.TintColor = Color3.fromRGB(255, 210, 170)
+	Instance.new("SunRaysEffect", Lighting).Intensity = 0.3
+end)
+v27("WARM CINEMATIC", function()
+	v21()
+	Lighting.ClockTime = 17.3
+	Lighting.Brightness = 2.4
+
+	local pairs_ = pairs
+	local Workspace = game.Workspace
+
+	for _, descendant in pairs_(Workspace.GetDescendants(Workspace)) do
+		local isBasePart = descendant:IsA("BasePart")
+
+		if isBasePart then
+			isBasePart = descendant.Name ~= "Terrain"
+		end
+
+		if isBasePart then
+			descendant.Reflectance = 0.12
+		end
+	end
+
+	Lighting.EnvironmentDiffuseScale = 0.5
+	Lighting.EnvironmentSpecularScale = 1
+	Lighting.OutdoorAmbient = Color3.fromRGB(125, 135, 145)
+
+	local Atmosphere = Instance.new("Atmosphere", Lighting)
+
+	Atmosphere.Density = 0.25
+	Atmosphere.Color = Color3.fromRGB(255, 170, 90)
+	Atmosphere.Decay = Color3.fromRGB(160, 190, 220)
+
+	local ColorCorrectionEffect = Instance.new("ColorCorrectionEffect", Lighting)
+
+	ColorCorrectionEffect.TintColor = Color3.fromRGB(235, 242, 255)
+	ColorCorrectionEffect.Saturation = 0.1
+	ColorCorrectionEffect.Contrast = 0.2
+
+	local SunRaysEffect = Instance.new("SunRaysEffect", Lighting)
+
+	SunRaysEffect.Intensity = 0.45
+	SunRaysEffect.Spread = 0.6
+
+	local BloomEffect = Instance.new("BloomEffect", Lighting)
+
+	BloomEffect.Intensity = 0.4
+	BloomEffect.Size = 15
+end)
+v27("GOLDEN SUNSET", function()
+	v21()
+	Lighting.ClockTime = 17.75
+	Lighting.Brightness = 2.8
+	Lighting.ExposureCompensation = 0
+	Lighting.EnvironmentDiffuseScale = 0.8
+	Lighting.EnvironmentSpecularScale = 1
+	Lighting.Ambient = Color3.fromRGB(120, 105, 100)
+	Lighting.OutdoorAmbient = Color3.fromRGB(170, 140, 115)
+	setReflectance(0.12)
+
+	addEffect("Atmosphere", {
+		Density = 0.4,
+		Offset = 0.3,
+		Color = Color3.fromRGB(255, 215, 170),
+		Decay = Color3.fromRGB(235, 150, 105),
+		Glare = 0.6,
+		Haze = 1.8,
+	})
+	addEffect("ColorCorrectionEffect", {
+		TintColor = Color3.fromRGB(255, 238, 220),
+		Saturation = 0.3,
+		Contrast = 0.15,
+	})
+	addEffect("BloomEffect", { Intensity = 0.7, Size = 36, Threshold = 0.85 })
+	addEffect("SunRaysEffect", { Intensity = 0.45, Spread = 0.9 })
+	addEffect("DepthOfFieldEffect", {
+		FarIntensity = 0.18,
+		FocusDistance = 40,
+		InFocusRadius = 90,
+		NearIntensity = 0,
+	})
+end)
+v27("STARRY NIGHT", function()
+	v21()
+	Lighting.ClockTime = 0
+	Lighting.Brightness = 1
+	Lighting.ExposureCompensation = 0.2
+	Lighting.Ambient = Color3.fromRGB(25, 30, 60)
+	Lighting.OutdoorAmbient = Color3.fromRGB(35, 45, 90)
+	Lighting.EnvironmentDiffuseScale = 0.4
+	Lighting.EnvironmentSpecularScale = 0.8
+	setReflectance(0.05)
+
+	addSky(6000)
+	addEffect("Atmosphere", {
+		Density = 0.08,
+		Color = Color3.fromRGB(40, 60, 120),
+		Decay = Color3.fromRGB(15, 20, 50),
+		Haze = 0,
+		Glare = 0,
+	})
+	addEffect("ColorCorrectionEffect", {
+		TintColor = Color3.fromRGB(175, 195, 255),
+		Saturation = 0.2,
+		Contrast = 0.15,
+	})
+	addEffect("BloomEffect", { Intensity = 0.6, Size = 20, Threshold = 1 })
+	startParticles({
+		area = Vector3.new(110, 50, 110),
+		offset = Vector3.new(0, 10, 0),
+		volume = true,
+		rate = 12,
+		life = { 4, 7 },
+		speed = { 2, 5 },
+		size = { 0.3, 0.6 },
+		color = ColorSequence.new(Color3.fromRGB(215, 228, 255)),
+		transparency = TWINKLE,
+		emission = 1,
+		texture = SPARKLE,
+	})
+end)
+v27("GALAXY", function()
+	v21()
+	Lighting.ClockTime = 0
+	Lighting.Brightness = 1.2
+	Lighting.Ambient = Color3.fromRGB(50, 25, 90)
+	Lighting.OutdoorAmbient = Color3.fromRGB(70, 40, 130)
+	Lighting.EnvironmentDiffuseScale = 0.6
+	Lighting.EnvironmentSpecularScale = 1
+	setReflectance(0.2)
+
+	addSky(10000, GALAXY_SKYBOX)
+	addEffect("Atmosphere", {
+		Density = 0.3,
+		Color = Color3.fromRGB(150, 70, 220),
+		Decay = Color3.fromRGB(60, 20, 120),
+		Haze = 0.5,
+		Glare = 0.3,
+	})
+	addEffect("ColorCorrectionEffect", {
+		TintColor = Color3.fromRGB(215, 165, 255),
+		Saturation = 0.6,
+		Contrast = 0.2,
+	})
+	addEffect("BloomEffect", { Intensity = 1, Size = 30, Threshold = 0.8 })
+	startParticles({
+		area = Vector3.new(110, 50, 110),
+		offset = Vector3.new(0, 10, 0),
+		volume = true,
+		rate = 16,
+		life = { 5, 8 },
+		speed = { 2, 5 },
+		size = { 0.4, 0.9 },
+		color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 140, 220)),
+			ColorSequenceKeypoint.new(0.5, Color3.fromRGB(190, 140, 255)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(120, 180, 255)),
+		}),
+		transparency = TWINKLE,
+		emission = 1,
+		texture = SPARKLE,
+	}, {
+		-- distant nebula clouds standing in for a galaxy skybox
+		area = Vector3.new(700, 250, 700),
+		offset = Vector3.new(0, 80, 0),
+		volume = true,
+		rate = 2.5,
+		life = { 14, 20 },
+		speed = { 2, 5 },
+		size = { 120, 220 },
+		color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(150, 70, 230)),
+			ColorSequenceKeypoint.new(0.5, Color3.fromRGB(235, 90, 190)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(70, 110, 255)),
+		}),
+		transparency = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 1),
+			NumberSequenceKeypoint.new(0.3, 0.82),
+			NumberSequenceKeypoint.new(0.7, 0.82),
+			NumberSequenceKeypoint.new(1, 1),
+		}),
+		emission = 1,
+	})
+end)
+v27("SNOW NIGHT", function()
+	v21()
+	Lighting.ClockTime = 0
+	Lighting.Brightness = 1.2
+	Lighting.Ambient = Color3.fromRGB(60, 70, 100)
+	Lighting.OutdoorAmbient = Color3.fromRGB(80, 95, 130)
+	Lighting.FogColor = Color3.fromRGB(120, 135, 170)
+	Lighting.FogStart = 20
+	Lighting.FogEnd = 700
+	Lighting.EnvironmentDiffuseScale = 0.5
+	setReflectance(0.08)
+
+	addSky(3000)
+	addEffect("Atmosphere", {
+		Density = 0.4,
+		Color = Color3.fromRGB(170, 190, 230),
+		Decay = Color3.fromRGB(90, 110, 160),
+		Haze = 1.5,
+		Glare = 0,
+	})
+	addEffect("ColorCorrectionEffect", {
+		TintColor = Color3.fromRGB(205, 220, 255),
+		Saturation = -0.1,
+		Contrast = 0.1,
+	})
+	addEffect("BloomEffect", { Intensity = 0.4, Size = 18, Threshold = 1 })
+	startParticles({
+		area = Vector3.new(80, 1, 80),
+		offset = Vector3.new(0, 35, 0),
+		rate = 90,
+		life = { 2.6, 3.2 },
+		speed = { 14, 20 },
+		size = { 0.25, 0.5 },
+		color = ColorSequence.new(Color3.fromRGB(255, 255, 255)),
+		transparency = NumberSequence.new(0.1),
+		accel = Vector3.new(1.5, 0, 0.5),
+		emission = 0.3,
+	})
+end)
+v27("BASIC DAY", function()
+	v21()
+	Lighting.ClockTime = 13
+	Lighting.Brightness = 3
+	Lighting.EnvironmentDiffuseScale = 0.5
+	Lighting.EnvironmentSpecularScale = 0.5
+	Lighting.Ambient = Color3.fromRGB(120, 120, 130)
+	Lighting.OutdoorAmbient = Color3.fromRGB(140, 150, 165)
+	setReflectance(0.03)
+
+	addEffect("Atmosphere", {
+		Density = 0.25,
+		Color = Color3.fromRGB(199, 215, 240),
+		Decay = Color3.fromRGB(106, 140, 190),
+		Haze = 0.8,
+		Glare = 0.2,
+	})
+	addEffect("ColorCorrectionEffect", { Saturation = 0.15, Contrast = 0.1 })
+	addEffect("SunRaysEffect", { Intensity = 0.15, Spread = 0.7 })
+	addEffect("BloomEffect", { Intensity = 0.25, Size = 16, Threshold = 1.2 })
+end)
+v27("CYBERPUNK NEON", function()
+	v21()
+	Lighting.ClockTime = 0
+	Lighting.Brightness = 1.5
+	Lighting.Ambient = Color3.fromRGB(55, 40, 80)
+	Lighting.OutdoorAmbient = Color3.fromRGB(55, 50, 95)
+	Lighting.EnvironmentDiffuseScale = 0.6
+	Lighting.EnvironmentSpecularScale = 0.8
+	setReflectance(0.2)
+
+	addEffect("Atmosphere", {
+		Density = 0.25,
+		Color = Color3.fromRGB(190, 100, 200),
+		Decay = Color3.fromRGB(70, 140, 190),
+		Haze = 1,
+		Glare = 0.2,
+	})
+	addEffect("ColorCorrectionEffect", {
+		TintColor = Color3.fromRGB(235, 218, 255),
+		Saturation = 0.4,
+		Contrast = 0.15,
+	})
+	addEffect("BloomEffect", { Intensity = 0.55, Size = 24, Threshold = 0.9 })
+end)
+v27("FOGGY DAWN", function()
+	v21()
+	Lighting.ClockTime = 6.3
+	Lighting.Brightness = 2
+	Lighting.ExposureCompensation = 0.1
+	Lighting.FogColor = Color3.fromRGB(220, 215, 215)
+	Lighting.FogStart = 0
+	Lighting.FogEnd = 450
+	Lighting.OutdoorAmbient = Color3.fromRGB(150, 145, 150)
+	setReflectance(0.06)
+
+	addEffect("Atmosphere", {
+		Density = 0.7,
+		Offset = 0.1,
+		Color = Color3.fromRGB(235, 215, 205),
+		Decay = Color3.fromRGB(190, 170, 175),
+		Haze = 3,
+		Glare = 0.3,
+	})
+	addEffect("ColorCorrectionEffect", {
+		TintColor = Color3.fromRGB(255, 235, 225),
+		Saturation = -0.1,
+	})
+	addEffect("SunRaysEffect", { Intensity = 0.4, Spread = 1 })
+	addEffect("BloomEffect", { Intensity = 0.5, Size = 28, Threshold = 0.9 })
+end)
+v27("BLOOD MOON", function()
+	v21()
+	Lighting.ClockTime = 0
+	Lighting.Brightness = 1.2
+	Lighting.Ambient = Color3.fromRGB(60, 30, 35)
+	Lighting.OutdoorAmbient = Color3.fromRGB(80, 40, 45)
+	Lighting.EnvironmentDiffuseScale = 0.4
+	setReflectance(0.06)
+
+	addSky(4000)
+	addEffect("Atmosphere", {
+		Density = 0.28,
+		Color = Color3.fromRGB(170, 85, 85),
+		Decay = Color3.fromRGB(95, 35, 35),
+		Haze = 1.2,
+		Glare = 0,
+	})
+	addEffect("ColorCorrectionEffect", {
+		TintColor = Color3.fromRGB(255, 205, 195),
+		Saturation = 0,
+		Contrast = 0.12,
+	})
+	addEffect("BloomEffect", { Intensity = 0.4, Size = 20, Threshold = 1 })
+	startParticles({
+		area = Vector3.new(100, 10, 100),
+		offset = Vector3.new(0, -6, 0),
+		volume = true,
+		rate = 25,
+		life = { 3, 5 },
+		speed = { 2, 5 },
+		size = { 0.2, 0.45 },
+		color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 190, 60)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 40, 20)),
+		}),
+		transparency = TWINKLE,
+		accel = Vector3.new(1, 8, 0),
+		emission = 1,
+		texture = SPARKLE,
+	})
+end)
+v27("RESET ALL SHADERS", function()
+	v21()
+	Lighting.Technology = Enum.Technology.ShadowMap
+end)
+
+local function v77()
+	Frame3:TweenSizeAndPosition(UDim2.new(0, 0, 0, 0), UDim2.new(0.5, 0, 0.5, 0), "In", "Quart", 0.5, true)
+	task.wait(0.6)
+	TextLabel.Text = "Thanks for using Shaders"
+
+	local tween = TweenService:Create(TextLabel, TweenInfo.new(0.8), {
+		TextTransparency = 0
+	})
+	local tween2 = TweenService:Create(TextLabel, TweenInfo.new(0.8), {
+		TextTransparency = 1
+	})
+
+	tween:Play()
+	tween.Completed:Wait()
+	task.wait(1.2)
+	tween2:Play()
+	tween2.Completed:Wait()
+	TextLabel.Text = "support me on tiktok: <font color=\'rgb(255,255,255)\'>kkyoraaku</font>"
+
+	local v80 = TweenService
+	local v81 = TextLabel
+	local TweenInfo_ = TweenInfo
+	local v83 = v80.Create(v80, v81, TweenInfo_.new(0.8), {
+		TextTransparency = 0
+	})
+	local tween3 = TweenService:Create(TextLabel, TweenInfo.new(0.8), {
+		TextTransparency = 1
+	})
+
+	v83:Play()
+	v83.Completed:Wait()
+	task.wait(1.2)
+	tween3:Play()
+	tween3.Completed:Wait()
+
+	stopParticles()
+	ScreenGui:Destroy()
+end
+
+v18.MouseButton1Click:Connect(v77)
+
+local u85 = false
+
+local function v86()
+	u85 = not u85
+
+	if u85 then
+		local v87 = Frame3
+		local UDim2_ = UDim2
+
+		v87.TweenSize(v87, UDim2_.new(0, 280, 0, 35), "Out", "Quart", 0.4, true)
+	else
+		Frame3:TweenSize(UDim2.new(0, 280, 0, 310), "Out", "Quart", 0.4, true)
+	end
+end
+
+v19.MouseButton1Click:Connect(v86)
+
+local u89 = nil
+local Position = nil
+local Position2 = nil
+
+Frame3.InputBegan:Connect(function(input)
+	if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+		return
+	end
+
+	u89 = true
+	Position = input.Position
+	Position2 = Frame3.Position
+end)
+UserInputService.InputChanged:Connect(function(input)
+	local v92 = u89
+
+	if v92 then
+		v92 = input.UserInputType == Enum.UserInputType.MouseMovement
+	end
+
+	if not v92 then
+		return
+	end
+
+	local v93 = input.Position - Position
+
+	Frame3.Position = UDim2.new(Position2.X.Scale, Position2.X.Offset + v93.X, Position2.Y.Scale, Position2.Y.Offset + v93.Y)
+end)
+UserInputService.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		u89 = false
+	end
+end);
+(function()
+	TextLabel.Text = "Shaders\n<font size=\"20\" color=\"rgb(150,150,150)\">Noctalia</font>"
+
+	local v95 = TweenService
+	local v96 = TextLabel
+	local TweenInfo_ = TweenInfo
+
+	v95.Create(v95, v96, TweenInfo_.new(1), {
+		TextTransparency = 0
+	}):Play()
+	task.wait(1.5)
+	TweenService:Create(TextLabel, TweenInfo.new(1), {
+		TextTransparency = 1
+	}):Play()
+	task.wait(0.5)
+	Frame3.Visible = true
+
+	local v98 = Frame3
+	local UDim2_ = UDim2
+
+	v98.TweenSizeAndPosition(v98, UDim2_.new(0, 280, 0, 310), UDim2.new(0.5, -140, 0.4, -155), "Out", "Quart", 0.6, true)
+end)()
